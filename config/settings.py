@@ -53,6 +53,7 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount',
     'rest_framework_simplejwt',
     'drf_standardized_errors',
+    'drf_yasg',
 ]
 
 LOCAL_APPS = [
@@ -171,3 +172,9 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+
+# Swagger settings
+SWAGGER_SETTINGS = {
+    "USE_SESSION_AUTH": False,
+    "SECURITY_DEFINITIONS": {"Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}},
+}
