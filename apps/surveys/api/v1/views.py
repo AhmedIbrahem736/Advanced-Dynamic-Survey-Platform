@@ -2,13 +2,15 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import DjangoModelPermissions, SAFE_METHODS
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
-from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse
+from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer
 from apps.surveys.api.v1.serializers import (SurveySerializer, SurveyReadOnlySerializer,
                                              SectionSerializer, SectionReadOnlySerializer,
                                              QuestionSerializer, QuestionReadOnlySerializer,
                                              QuestionChoiceSerializer, QuestionChoiceReadOnlySerializer,
-                                             SurveyResponseSerializer, SurveyResponseReadOnlySerializer)
-from apps.surveys.filters import SurveyFilter, SectionFilter, QuestionFilter, QuestionChoiceFilter, SurveyResponseFilter
+                                             SurveyResponseSerializer, SurveyResponseReadOnlySerializer,
+                                             QuestionAnswerSerializer, QuestionAnswerReadOnlySerializer)
+from apps.surveys.filters import (SurveyFilter, SectionFilter, QuestionFilter, QuestionChoiceFilter,
+                                  SurveyResponseFilter, QuestionAnswerFilter)
 
 
 class SurveyViewSet(ModelViewSet):
@@ -78,3 +80,22 @@ class SurveyResponseViewSet(ModelViewSet):
             return SurveyResponseReadOnlySerializer
 
         return SurveyResponseSerializer
+
+
+class QuestionAnswerViewSet(ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
+    queryset = QuestionAnswer.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = QuestionAnswerFilter
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return QuestionAnswerReadOnlySerializer
+
+        return QuestionAnswerSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['current_user'] = self.request.user
+
+        return context
