@@ -1,8 +1,10 @@
-from rest_framework.serializers import ModelSerializer
-from apps.surveys.models import Survey, Section, Question, QuestionChoice
+from rest_framework.serializers import ModelSerializer, HiddenField, CurrentUserDefault
+from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse
 
 
 class SurveySerializer(ModelSerializer):
+    created_by = HiddenField(default=CurrentUserDefault())
+
     class Meta:
         model = Survey
         fields = ["name", "description", "start_date", "end_date", "created_by"]
@@ -47,4 +49,18 @@ class QuestionChoiceSerializer(ModelSerializer):
 class QuestionChoiceReadOnlySerializer(ModelSerializer):
     class Meta:
         model = QuestionChoice
+        fields = "__all__"
+
+
+class SurveyResponseSerializer(ModelSerializer):
+    respondent = HiddenField(default=CurrentUserDefault())
+
+    class Meta:
+        model = SurveyResponse
+        fields = ["survey", "respondent"]
+
+
+class SurveyResponseReadOnlySerializer(ModelSerializer):
+    class Meta:
+        model = SurveyResponse
         fields = "__all__"
