@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer
-from apps.surveys.models import Survey, Section, Question
+from apps.surveys.models import Survey, Section, Question, QuestionChoice
 
 
 class SurveySerializer(ModelSerializer):
@@ -35,4 +35,16 @@ class QuestionSerializer(ModelSerializer):
 class QuestionReadOnlySerializer(ModelSerializer):
     class Meta:
         model = Question
+        fields = "__all__"
+
+
+class QuestionChoiceSerializer(ModelSerializer):
+    class Meta:
+        model = QuestionChoice
+        fields = ["choice", "question"]
+
+
+class QuestionChoiceReadOnlySerializer(ModelSerializer):
+    class Meta:
+        model = QuestionChoice
         fields = "__all__"
