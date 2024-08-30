@@ -35,6 +35,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('auth/', include('dj_rest_auth.urls')),
     path('auth/registration/', include('dj_rest_auth.registration.urls')),
+    path('api/v1/', include('apps.surveys.api.v1.urls')),
 
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path("api/docs/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui",),

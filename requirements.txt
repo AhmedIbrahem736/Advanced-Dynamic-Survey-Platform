@@ -7,3 +7,4 @@ djangorestframework-simplejwt==5.3.1
 drf-standardized-errors==0.14.1
 drf-yasg==1.21.7
 setuptools==74.0.0
+django-filter==24.3
