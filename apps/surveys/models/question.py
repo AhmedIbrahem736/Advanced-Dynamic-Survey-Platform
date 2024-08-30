@@ -16,3 +16,8 @@ class Question(CustomBaseModel):
     order = models.PositiveIntegerField()
     type = models.CharField(max_length=50, choices=QuestionType.choices, default=QuestionType.TEXT)
     section = models.ForeignKey("surveys.Section", on_delete=models.CASCADE, related_name="questions")
+
+
+class QuestionChoice(CustomBaseModel):
+    choice = models.TextField()
+    question = models.ForeignKey("surveys.Question", on_delete=models.CASCADE, related_name="choices")
