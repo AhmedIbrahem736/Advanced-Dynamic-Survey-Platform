@@ -1,5 +1,5 @@
 import django_filters
-from apps.surveys.models import Survey, Section
+from apps.surveys.models import Survey, Section, Question
 
 
 class SurveyFilter(django_filters.FilterSet):
@@ -20,3 +20,9 @@ class SectionFilter(django_filters.FilterSet):
     class Meta:
         model = Section
         fields = ["survey"]
+
+
+class QuestionFilter(django_filters.FilterSet):
+    class Meta:
+        model = Question
+        fields = ["type", "section"]

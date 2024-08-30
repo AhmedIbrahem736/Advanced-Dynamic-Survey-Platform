@@ -2,10 +2,11 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import DjangoModelPermissions, SAFE_METHODS
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
-from apps.surveys.models import Survey, Section
+from apps.surveys.models import Survey, Section, Question
 from apps.surveys.api.v1.serializers import (SurveySerializer, SurveyReadOnlySerializer,
-                                             SectionSerializer, SectionReadOnlySerializer)
-from apps.surveys.filters import SurveyFilter, SectionFilter
+                                             SectionSerializer, SectionReadOnlySerializer,
+                                             QuestionSerializer, QuestionReadOnlySerializer)
+from apps.surveys.filters import SurveyFilter, SectionFilter, QuestionFilter
 
 
 class SurveyViewSet(ModelViewSet):
@@ -34,3 +35,17 @@ class SectionViewSet(ModelViewSet):
             return SectionReadOnlySerializer
 
         return SectionSerializer
+
+
+class QuestionViewSet(ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
+    queryset = Question.objects.all()
+    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filterset_class = QuestionFilter
+    search_fields = ["text"]
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return QuestionReadOnlySerializer
+
+        return QuestionSerializer
