@@ -15,3 +15,6 @@ class SurveyResponse(CustomBaseModel):
     respondent = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="survey_responses")
     is_completed = models.BooleanField(default=False)
     is_submitted = models.BooleanField(default=False)
+
+    class Meta:
+        unique_together = ('survey', 'respondent')

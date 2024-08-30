@@ -21,3 +21,21 @@ class Question(CustomBaseModel):
 class QuestionChoice(CustomBaseModel):
     choice = models.TextField()
     question = models.ForeignKey("surveys.Question", on_delete=models.CASCADE, related_name="choices")
+
+
+class QuestionAnswer(CustomBaseModel):
+    text_answer = models.TextField(null=True)
+    question = models.ForeignKey("surveys.Question", on_delete=models.CASCADE, related_name="respondent_answers")
+    survey_response = models.ForeignKey("surveys.SurveyResponse", on_delete=models.CASCADE, related_name="answers")
+    question_choices = models.ManyToManyField("surveys.QuestionChoice", through="QuestionAnswerQuestionChoice")
+
+    class Meta:
+        unique_together = ('survey_response', 'question')
+
+
+class QuestionAnswerQuestionChoice(CustomBaseModel):
+    question_answer = models.ForeignKey("surveys.QuestionAnswer", on_delete=models.CASCADE, related_name="choices")
+    question_choice = models.ForeignKey("surveys.QuestionChoice", on_delete=models.CASCADE, related_name="answers")
+
+    class Meta:
+        unique_together = ('question_answer', 'question_choice')
