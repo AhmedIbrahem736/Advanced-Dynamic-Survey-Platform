@@ -1,5 +1,5 @@
 import django_filters
-from apps.surveys.models import Survey
+from apps.surveys.models import Survey, Section
 
 
 class SurveyFilter(django_filters.FilterSet):
@@ -14,3 +14,9 @@ class SurveyFilter(django_filters.FilterSet):
         model = Survey
         fields = ["created_by", "start_date_from", "start_date_to", "start_date_on",
                   "end_date_from", "end_date_to", "end_date_on"]
+
+
+class SectionFilter(django_filters.FilterSet):
+    class Meta:
+        model = Section
+        fields = ["survey"]
