@@ -1,5 +1,5 @@
 import django_filters
-from apps.surveys.models import Survey, Section, Question, QuestionChoice
+from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse
 
 
 class SurveyFilter(django_filters.FilterSet):
@@ -32,3 +32,9 @@ class QuestionChoiceFilter(django_filters.FilterSet):
     class Meta:
         model = QuestionChoice
         fields = ["question"]
+
+
+class SurveyResponseFilter(django_filters.FilterSet):
+    class Meta:
+        model = SurveyResponse
+        fields = ["survey", "respondent", "is_completed", "is_submitted"]
