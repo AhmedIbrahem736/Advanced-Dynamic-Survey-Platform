@@ -1,6 +1,5 @@
 import datetime
 from django.db import models
-from rest_framework.exceptions import ValidationError
 from apps.base.models import CustomBaseModel
 
 
@@ -57,6 +56,15 @@ class QuestionAnswer(CustomBaseModel):
                 return False
 
         return True
+
+    def save(self, *args, **kwargs):
+        response = super().save(*args, **kwargs)
+
+        # update the survey response status
+        from apps.surveys.tasks import check_and_update_survey_response_status
+        check_and_update_survey_response_status.delay(survey_response_id=self.survey_response.id)
+
+        return response
 
 
 class QuestionAnswerQuestionChoice(CustomBaseModel):
