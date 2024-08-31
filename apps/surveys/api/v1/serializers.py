@@ -1,6 +1,7 @@
 from rest_framework.serializers import (ModelSerializer, HiddenField, CurrentUserDefault,
                                         ValidationError, PrimaryKeyRelatedField)
-from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer
+from apps.surveys.models import (Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer,
+                                 ConditionalBlocking)
 
 
 class SurveySerializer(ModelSerializer):
@@ -116,4 +117,25 @@ class QuestionAnswerSerializer(ModelSerializer):
 class QuestionAnswerReadOnlySerializer(ModelSerializer):
     class Meta:
         model = QuestionAnswer
+        fields = "__all__"
+
+
+class ConditionalBlockingSerializer(ModelSerializer):
+    class Meta:
+        model = ConditionalBlocking
+        fields = ["choice", "question"]
+
+    def validate(self, attrs):
+        choice = attrs.get("choice")
+        question = attrs.get("question")
+
+        if question.order <= choice.question.order:
+            raise ValidationError("A choice can only block upcoming questions.")
+
+        return attrs
+
+
+class ConditionalBlockingReadOnlySerializer(ModelSerializer):
+    class Meta:
+        model = ConditionalBlocking
         fields = "__all__"
