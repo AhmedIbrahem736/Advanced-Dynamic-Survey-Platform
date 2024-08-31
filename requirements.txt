@@ -10,3 +10,4 @@ setuptools==74.0.0
 django-filter==24.3
 celery==5.4.0
 redis==5.0.8
+django-redis==5.4.0

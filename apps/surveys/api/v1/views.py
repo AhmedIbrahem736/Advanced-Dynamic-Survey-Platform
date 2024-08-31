@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,6 +19,7 @@ from apps.surveys.api.v1.serializers import (SurveySerializer, SurveyReadOnlySer
                                              ConditionalBlockingSerializer, ConditionalBlockingReadOnlySerializer)
 from apps.surveys.filters import (SurveyFilter, SectionFilter, QuestionFilter, QuestionChoiceFilter,
                                   SurveyResponseFilter, QuestionAnswerFilter, ConditionalBlockingFilter)
+from apps.surveys.utility import generate_cache_key
 
 
 class SurveyViewSet(ModelViewSet):
@@ -30,6 +34,10 @@ class SurveyViewSet(ModelViewSet):
             return SurveyReadOnlySerializer
 
         return SurveySerializer
+
+    @method_decorator(cache_page(settings.CACHING_TIME_IN_SECONDS, key_prefix=lambda request: request.get_full_path()))
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class SectionViewSet(ModelViewSet):

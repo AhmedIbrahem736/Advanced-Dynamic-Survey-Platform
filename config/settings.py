@@ -78,6 +78,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'apps.base.logger.RequestResponseLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -105,7 +106,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 DATABASES = {
-    'default': env.db("DATABASE_URL")
+    'default': env.db("DATABASE_URL"),
+    'read_only': env.db("DATABASE_REPLICA_URL")
 }
 
 
@@ -200,3 +202,35 @@ SWAGGER_SETTINGS = {
 # Celery settings
 CELERY_BROKER_URL = env("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND")
+
+# Caching
+CACHING_TIME_IN_SECONDS = env.int("CACHING_TIME_IN_SECONDS", default=3600)
+
+# Logger settings
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'external_request': {
+            'class': 'logging.FileHandler',
+            'filename': 'external_request.log',
+        },
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler"
+        },
+    },
+    "loggers": {
+        "external_request": {
+            "handlers": ['external_request'],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "django": {
+            "handlers": ["console"],
+            "propagate": True,
+        },
+    }
+}
+
+# Database replica
+DATABASE_ROUTERS = ['apps.base.db_routing.PrimaryReplicaRouter']
