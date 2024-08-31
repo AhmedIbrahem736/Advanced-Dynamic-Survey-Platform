@@ -1,6 +1,7 @@
 from rest_framework.serializers import (ModelSerializer, HiddenField, CurrentUserDefault,
                                         ValidationError, PrimaryKeyRelatedField)
-from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer
+from apps.surveys.models import (Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer,
+                                 ConditionalBlocking)
 
 
 class SurveySerializer(ModelSerializer):
@@ -46,6 +47,12 @@ class QuestionChoiceSerializer(ModelSerializer):
         model = QuestionChoice
         fields = ["choice", "question"]
 
+    def validate_question(self, question):
+        if not question.requires_choices():
+            raise ValidationError("You cannot assign choices to this question.")
+
+        return question
+
 
 class QuestionChoiceReadOnlySerializer(ModelSerializer):
     class Meta:
@@ -84,13 +91,25 @@ class QuestionAnswerSerializer(ModelSerializer):
 
     def validate(self, attrs):
         text_answer = attrs.get("text_answer")
+        question = attrs.get("question")
         question_choices = attrs.get("question_choices")
 
         if text_answer and question_choices:
-            raise ValidationError("You cannot pick a choice while submitting an answer text.")
+            raise ValidationError("You cannot pick a choice while submitting an text answer.")
 
-        if not (text_answer or question_choices):
-            raise ValidationError("You must submit an answer.")
+        if question.requires_choices():
+            if not question_choices:
+                raise ValidationError("You must pick at least one choice.")
+
+            for question_choice in question_choices:
+                if question_choice.question != question:
+                    raise ValidationError("Not all choices belong to this question.")
+        else:
+            if not text_answer:
+                raise ValidationError("You must write an answer.")
+
+            if not QuestionAnswer.is_valid_text_answer(text_answer=text_answer, question_type=question.type):
+                raise ValidationError("You must enter a valid answer that matches the question type.")
 
         return attrs
 
@@ -98,4 +117,25 @@ class QuestionAnswerSerializer(ModelSerializer):
 class QuestionAnswerReadOnlySerializer(ModelSerializer):
     class Meta:
         model = QuestionAnswer
+        fields = "__all__"
+
+
+class ConditionalBlockingSerializer(ModelSerializer):
+    class Meta:
+        model = ConditionalBlocking
+        fields = ["choice", "question"]
+
+    def validate(self, attrs):
+        choice = attrs.get("choice")
+        question = attrs.get("question")
+
+        if question.order <= choice.question.order:
+            raise ValidationError("A choice can only block upcoming questions.")
+
+        return attrs
+
+
+class ConditionalBlockingReadOnlySerializer(ModelSerializer):
+    class Meta:
+        model = ConditionalBlocking
         fields = "__all__"

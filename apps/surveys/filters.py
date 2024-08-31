@@ -1,5 +1,6 @@
 import django_filters
-from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer
+from apps.surveys.models import (Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer,
+                                 ConditionalBlocking)
 
 
 class SurveyFilter(django_filters.FilterSet):
@@ -44,3 +45,9 @@ class QuestionAnswerFilter(django_filters.FilterSet):
     class Meta:
         model = QuestionAnswer
         fields = ["question", "survey_response"]
+
+
+class ConditionalBlockingFilter(django_filters.FilterSet):
+    class Meta:
+        model = ConditionalBlocking
+        fields = ["choice", "question"]

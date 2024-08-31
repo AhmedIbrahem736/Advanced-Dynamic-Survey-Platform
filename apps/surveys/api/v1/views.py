@@ -1,16 +1,21 @@
+from django.shortcuts import get_object_or_404
+from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import DjangoModelPermissions, SAFE_METHODS
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
-from apps.surveys.models import Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer
+from apps.surveys.models import (Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer,
+                                 ConditionalBlocking)
 from apps.surveys.api.v1.serializers import (SurveySerializer, SurveyReadOnlySerializer,
                                              SectionSerializer, SectionReadOnlySerializer,
                                              QuestionSerializer, QuestionReadOnlySerializer,
                                              QuestionChoiceSerializer, QuestionChoiceReadOnlySerializer,
                                              SurveyResponseSerializer, SurveyResponseReadOnlySerializer,
-                                             QuestionAnswerSerializer, QuestionAnswerReadOnlySerializer)
+                                             QuestionAnswerSerializer, QuestionAnswerReadOnlySerializer,
+                                             ConditionalBlockingSerializer, ConditionalBlockingReadOnlySerializer)
 from apps.surveys.filters import (SurveyFilter, SectionFilter, QuestionFilter, QuestionChoiceFilter,
-                                  SurveyResponseFilter, QuestionAnswerFilter)
+                                  SurveyResponseFilter, QuestionAnswerFilter, ConditionalBlockingFilter)
 
 
 class SurveyViewSet(ModelViewSet):
@@ -99,3 +104,38 @@ class QuestionAnswerViewSet(ModelViewSet):
         context['current_user'] = self.request.user
 
         return context
+
+
+class ConditionalBlockingViewSet(ModelViewSet):
+    permission_classes = [DjangoModelPermissions]
+    queryset = ConditionalBlocking.objects.all()
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = ConditionalBlockingFilter
+
+    def get_serializer_class(self):
+        if self.request.method in SAFE_METHODS:
+            return ConditionalBlockingReadOnlySerializer
+
+        return ConditionalBlockingSerializer
+
+
+class GetNextQuestion(APIView):
+    def get(self, request, previous_question_id, *args, **kwargs):
+        respondent = request.user
+        previous_question = get_object_or_404(Question, pk=previous_question_id)
+        current_survey = previous_question.section.survey
+
+        respondent_previous_choice_answers = (QuestionChoice.
+                                              objects.
+                                              filter(answers__question_answer__survey_response__survey=current_survey,
+                                                     answers__question_answer__survey_response__respondent=respondent))
+
+        questions = (Question.objects.filter(section__survey=current_survey)
+                     .exclude(blocked_questions__choice__in=respondent_previous_choice_answers).order_by("order"))
+
+        next_question = questions.filter(order__gt=previous_question.order).first()
+
+        if not next_question:
+            return Response(data={"result": "No more questions."})
+
+        return Response(data=QuestionReadOnlySerializer(instance=next_question).data)
