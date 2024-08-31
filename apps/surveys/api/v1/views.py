@@ -1,5 +1,6 @@
 from django.conf import settings
-from django.core.cache import cache
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -34,18 +35,9 @@ class SurveyViewSet(ModelViewSet):
 
         return SurveySerializer
 
+    @method_decorator(cache_page(settings.CACHING_TIME_IN_SECONDS, key_prefix=lambda request: request.get_full_path()))
     def list(self, request, *args, **kwargs):
-        cache_key = generate_cache_key("survey_list", request.query_params)
-        cached_data = cache.get(cache_key)
-
-        if cached_data is not None:
-            return Response(cached_data)
-
-        response = super().list(request, *args, **kwargs)
-
-        cache.set(cache_key, response.data, settings.CACHING_TIME_IN_SECONDS)
-
-        return response
+        return super().list(request, *args, **kwargs)
 
 
 class SectionViewSet(ModelViewSet):

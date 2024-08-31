@@ -1,5 +1,6 @@
 from rest_framework.serializers import (ModelSerializer, HiddenField, CurrentUserDefault,
                                         ValidationError, PrimaryKeyRelatedField)
+from rest_framework.validators import UniqueTogetherValidator
 from apps.surveys.models import (Survey, Section, Question, QuestionChoice, SurveyResponse, QuestionAnswer,
                                  ConditionalBlocking)
 
@@ -34,6 +35,15 @@ class QuestionSerializer(ModelSerializer):
     class Meta:
         model = Question
         fields = ["text", "order", "type", "section"]
+
+    def validate(self, attrs):
+        section = attrs.get('section')
+        order = attrs.get('order')
+
+        if Question.objects.filter(section__survey=section.survey, order=order).exists():
+            raise ValidationError("A question with this order in the given survey already exists.")
+
+        return attrs
 
 
 class QuestionReadOnlySerializer(ModelSerializer):
