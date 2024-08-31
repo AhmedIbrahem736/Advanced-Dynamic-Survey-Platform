@@ -56,6 +56,7 @@ THIRD_PARTY_APPS = [
     'drf_standardized_errors',
     'drf_yasg',
     'django_filters',
+    'celery',
 ]
 
 LOCAL_APPS = [
@@ -194,3 +195,7 @@ SWAGGER_SETTINGS = {
     "USE_SESSION_AUTH": False,
     "SECURITY_DEFINITIONS": {"Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}},
 }
+
+# Celery settings
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = env("CELERY_RESULT_BACKEND")
