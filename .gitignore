@@ -20,3 +20,4 @@ venv/
 
 # unit testing
 /unit_testing
+*.log
