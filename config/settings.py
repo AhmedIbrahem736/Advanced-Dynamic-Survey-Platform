@@ -174,6 +174,7 @@ REST_AUTH = {
     'USE_JWT': True,
     'JWT_AUTH_HTTPONLY': False,
     'OLD_PASSWORD_FIELD_ENABLED': True,
+    'REGISTER_SERIALIZER': 'apps.users.api.v1.serializers.CustomRegisterSerializer',
 }
 
 # JWT settings
