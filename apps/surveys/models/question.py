@@ -1,4 +1,6 @@
+import datetime
 from django.db import models
+from rest_framework.exceptions import ValidationError
 from apps.base.models import CustomBaseModel
 
 
@@ -11,11 +13,17 @@ class QuestionType(models.TextChoices):
     RADIO_BUTTON = "radio button"
 
 
+ChoiceQuestionType = [QuestionType.DROPDOWN, QuestionType.CHECKBOX, QuestionType.RADIO_BUTTON]
+
+
 class Question(CustomBaseModel):
     text = models.TextField()
     order = models.PositiveIntegerField()
     type = models.CharField(max_length=50, choices=QuestionType.choices, default=QuestionType.TEXT)
     section = models.ForeignKey("surveys.Section", on_delete=models.CASCADE, related_name="questions")
+
+    def requires_choices(self) -> bool:
+        return self.type in ChoiceQuestionType
 
 
 class QuestionChoice(CustomBaseModel):
@@ -31,6 +39,24 @@ class QuestionAnswer(CustomBaseModel):
 
     class Meta:
         unique_together = ('survey_response', 'question')
+
+    @classmethod
+    def is_valid_text_answer(cls, text_answer: str, question_type: QuestionType) -> bool:
+        if question_type == QuestionType.NUMBER:
+            try:
+                int(text_answer)
+                return True
+            except ValueError:
+                return False
+
+        if question_type == QuestionType.DATE:
+            try:
+                datetime.date.fromisoformat(text_answer)
+                return True
+            except ValueError:
+                return False
+
+        return True
 
 
 class QuestionAnswerQuestionChoice(CustomBaseModel):
